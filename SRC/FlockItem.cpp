@@ -3,19 +3,30 @@
 #include <vector>
 #include "FlockItem.h"
 #include <stdlib.h>
+#include <iostream>
 
-#define std::<float> Vec4
+#define Vec4 std::vector<float>
 		
-FlockItem::FlockItem(int level) {
+FlockItem::FlockItem(int level, std::string& name) {
     // 7 random floats [-10, 10] for pos, [0, 2pi] rot, [-2, 2] vel
 	float r1 = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
 	float r2 = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
 	float r3 = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-	r1 = (r1 * 20.0f) - 10.0f;
-	r2 = (r2 * 20.0f) - 10.0f;
-	r3 = (r3 * 20.0f) - 10.0f;
+	r1 = (r1 * ((20.0f * level) + 1.0f))
+		- (((10.0f + (float) level) + 1.0f) / 2.0f);
+	r2 = (r2 * ((20.0f * level) + 1.0f))
+		- (((10.0f + (float) level) + 1.0f) / 2.0f);
+	r3 = (r3 * ((20.0f * level) + 1.0f))
+		- (((10.0f + (float) level) + 1.0f) / 2.0f);
 	
-	updatePos(Vec4(r1, r2, r3, 1.0f));
+	Vec4 tmp;
+	tmp.push_back(r1);
+	tmp.push_back(r2);
+	tmp.push_back(r3);
+	tmp.push_back(1.0f);
+	
+	updatePos(tmp);
+	tmp.clear();
 	
 	r1 = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
 	r2 = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
@@ -24,12 +35,19 @@ FlockItem::FlockItem(int level) {
 	r2 = (r1 * (2 * 3.14f));
 	r3 = (r1 * (2 * 3.14f));
 	
-	updateRot(Vec4(r1, r2, r3, 1.0f));
+	tmp.push_back(r1);
+	tmp.push_back(r2);
+	tmp.push_back(r3);
+	tmp.push_back(1.0f);
+	
+	updateRot(tmp);
+	tmp.clear();
 	
 	r1 = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-	updateVel(r1 * 4.0f) - 2.0f;
+	updateVel(((r1 + level) * 4.0f) - 2.0f);
 	
 	foodChainLevel = level;
+	pName = name;
 }
 
 Vec4 FlockItem::getRot() {

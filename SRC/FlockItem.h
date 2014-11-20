@@ -1,16 +1,18 @@
 // Copyright 2014 Aaron Baker (bakeraj4)
 
 #include <vector>
+#include <string>
 
-#define std::<float> Vec4
+#define Vec4 std::vector<float>
 
 class FlockItem{
     private:
         Vec4 pos, rot;
 		float vel;
 		int foodChainLevel;
+		std::string pName;
     public:
-        FlockItem(int level);
+        FlockItem(int level, std::string& name);
 		Vec4 getRot();
 		void updateRot(Vec4 n_rot);
 		Vec4 getPos();
@@ -18,4 +20,5 @@ class FlockItem{
 		float getVel();
 		void updateVel(float n_vel);
 		int getLevel();
+		std::string getPName();
 };
