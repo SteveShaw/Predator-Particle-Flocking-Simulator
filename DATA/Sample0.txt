@@ -1,0 +1,2 @@
+Bird_A	10
+Bird_B	15

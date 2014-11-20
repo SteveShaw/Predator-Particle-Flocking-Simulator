@@ -6,7 +6,7 @@
 #include <iostream>
 
 #define Vec4 std::vector<float>
-		
+
 FlockItem::FlockItem(int level, std::string& name) {
     // 7 random floats [-10, 10] for pos, [0, 2pi] rot, [-2, 2] vel
 	float r1 = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);

@@ -7,8 +7,50 @@
 #include <time.h>
 #include <string> 
 #include <fstream>
+#include <GL/freeglut.h>
+#pragma once
+typedef std::vector<FlockItem> Flock;
+const int W = 400;
+const int H = 400;
+const int SLICES = 25;
+const int STACKS = 20;
 
-#define Flock std::vector<FlockItem>
+void sphere() {
+	glutSolidSphere(0.5, SLICES, STACKS);
+}
+
+void IT(double sx, double sy, double sz,
+		double dx, double dy, double dz,
+		double deg, double vx, double vy, double vz)
+{
+	glPushMatrix();
+
+	glTranslatef(dx, dy, dz);
+	glRotatef(deg, vx, vy, vz);
+	glScalef(sx, sy, sz);
+	sphere();
+
+	glPopMatrix();
+}
+
+
+void display(void) {
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	gluLookAt(1,2,3, 0,0,0, 0,1,0);
+
+	glLineWidth(4);
+
+	IT(1,1,1, 0,0,0, 0,0,1,0);
+	
+	glFlush();
+	glutSwapBuffers();
+}
+
+
+// static bool continueSimulatoion = true	
 
 Flock makeFlock(int amnt, int level, std::string& name) {
 	Flock ret = Flock();
@@ -37,9 +79,13 @@ std::vector<Flock> makeAllParticles(std::string& fileName) {
 }
 
 int main(int argc, char* argv[]) {
-    if (argc != 3) {
+    /*if (argc != 3) {
         std::cout << "There were not engough parameters.\n"
-		    << "There needs to be <(CPU|GPU) (input file)>.\n";
+		    << "There needs to be <(CPU|GPU) (input file)>.\n"
+			<< "The user provided " << argc << ".\nAnd they are:\n";
+			for (int i = 0; i < argc; i++ ) {
+				std::cout << argv[i] << "\n";
+			}
 		return -1;
     }
 	
@@ -47,8 +93,35 @@ int main(int argc, char* argv[]) {
 	
 	srand(time(NULL));
 	std::string file(argv[2]);
-	std::vector<Flock> allParticles = makeAllParticles(file);
-//  GL gl = createGL(&Particles);
-//	CL cl = createCL("file.cl", "function_name", &allParticles, gl);
-//	EXP exp = createProject(cl, gl, flock)
+	std::vector<Flock> allParticles = makeAllParticles(file);*/
+
+	glutInit(&argc, argv);
+	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
+	glutInitWindowSize(W, H);
+	glutCreateWindow("Shapes");
+	glutDisplayFunc(display);
+	glEnable(GL_DEPTH_TEST);
+
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glOrtho(-2, 2, -2, 2, -10, 10);
+
+	glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_LIGHTING);
+	glEnable(GL_LIGHT0);
+	glEnable(GL_NORMALIZE);
+	glEnable(GL_COLOR_MATERIAL);
+	glShadeModel(GL_SMOOTH);
+	float white[4] = {1,1,1,1};
+	float gray[4] = {0.5,0.5,0.5,1};
+	float black[4] = {0,0,0,1};
+	float pos[4] = {0,0,10,1};
+	glLightfv(GL_LIGHT0, GL_AMBIENT, gray);
+	glLightfv(GL_LIGHT0, GL_POSITION, pos);
+
+	glutMainLoop();
+
+//	CL cl = createCL("file.cl", "function_name", &allParticles);
+//	EXP exp = createProject(cl, flock)
 }
