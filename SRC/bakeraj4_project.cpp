@@ -9,7 +9,7 @@
 #include <fstream>
 #include <GL/freeglut.h>
 #pragma once
-typedef std::vector<FlockItem> Flock;
+typedef FlockItem Flock;
 const int W = 512, H = 512, SLICES = 25, STACKS = 20;
 std::vector<Flock> allParticles;
 float n, l, m;
@@ -44,9 +44,9 @@ void display(void) {
 		// set color
 		glColor3f(m, m, m);
 		std::cout << "\nlevel : " << i << "\n";
-		for(unsigned int j = 0; j < allParticles[i].size(); j++) {
-			std::cout << allParticles[i][j].getPos()[0] << "\t" << allParticles[i][j].getPos()[1] << "\t" << allParticles[i][j].getPos()[2] << "\n";
-			IT(1, 1, 1, allParticles[i][j].getPos()[0], allParticles[i][j].getPos()[1], allParticles[i][j].getPos()[2], 0, 0, 1, 0);
+		for(unsigned int j = 0; j < allParticles[i].getAmnt(); j++) {
+			std::cout << allParticles[i].getPosX(j) << "\t" << allParticles[i].getPosY(j) << "\t" << allParticles[i].getRotZ(j) << "\n";
+			IT(1, 1, 1, allParticles[i].getPosX(j), allParticles[i].getPosY(j), allParticles[i].getPosY(j), 0, 0, 1, 0);
 		}
 	}
 
@@ -56,14 +56,6 @@ void display(void) {
 
 
 // static bool continueSimulatoion = true	
-
-Flock makeFlock(int amnt, int level, std::string& name) {
-	Flock ret = Flock();
-	for(int i = 0; i < amnt; i++) {
-		ret.push_back(FlockItem(level, name));
-	}
-	return ret;
-}
 
 std::vector<Flock> makeAllParticles(std::string& fileName) {
 	std::ifstream file(fileName);
@@ -75,7 +67,7 @@ std::vector<Flock> makeAllParticles(std::string& fileName) {
 		found = line.find("\t");
 		pName = line.substr(0, found);
 		amnt = stoi(line.substr(found + 1));
-		particles.push_back(makeFlock(amnt, level, pName));
+		particles.push_back(FlockItem(level, pName, amnt));
 		++level;
 	}
 	
