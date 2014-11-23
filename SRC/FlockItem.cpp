@@ -8,16 +8,16 @@
 #define Vec4 std::vector<float>
 
 FlockItem::FlockItem(int level, std::string& name) {
-    // 7 random floats [-10, 10] for pos, [0, 2pi] rot, [-2, 2] vel
+    // 7 random floats [-x, x] for pos, [0, 2pi] rot, [-2, 2] vel
 	float r1 = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
 	float r2 = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
 	float r3 = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-	r1 = (r1 * ((20.0f * level) + 1.0f))
-		- (((10.0f + (float) level) + 1.0f) / 2.0f);
-	r2 = (r2 * ((20.0f * level) + 1.0f))
-		- (((10.0f + (float) level) + 1.0f) / 2.0f);
-	r3 = (r3 * ((20.0f * level) + 1.0f))
-		- (((10.0f + (float) level) + 1.0f) / 2.0f);
+	
+	// The range based om the current view point is [-2,2]
+
+	r1 = (r1 * level) - ((float) level / 2.0f);
+	r2 = (r2 * level) - ((float) level / 2.0f);
+	r3 = (r3 * level) - ((float) level / 2.0f);
 	
 	Vec4 tmp;
 	tmp.push_back(r1);

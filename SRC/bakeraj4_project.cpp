@@ -10,26 +10,21 @@
 #include <GL/freeglut.h>
 #pragma once
 typedef std::vector<FlockItem> Flock;
-const int W = 400;
-const int H = 400;
-const int SLICES = 25;
-const int STACKS = 20;
+const int W = 512, H = 512, SLICES = 25, STACKS = 20;
+std::vector<Flock> allParticles;
+float n, l, m;
 
 void sphere() {
-	glutSolidSphere(0.5, SLICES, STACKS);
+	glutSolidSphere(0.01, SLICES, STACKS);
 }
 
-void IT(double sx, double sy, double sz,
-		double dx, double dy, double dz,
-		double deg, double vx, double vy, double vz)
-{
+void IT(double sx, double sy, double sz, double dx, double dy, double dz,
+		double deg, double vx, double vy, double vz) {
 	glPushMatrix();
-
 	glTranslatef(dx, dy, dz);
 	glRotatef(deg, vx, vy, vz);
 	glScalef(sx, sy, sz);
 	sphere();
-
 	glPopMatrix();
 }
 
@@ -39,12 +34,22 @@ void display(void) {
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	gluLookAt(1,2,3, 0,0,0, 0,1,0);
+	gluLookAt(1, 2, 3, 0, 0, 0, 0, 1, 0);
 
 	glLineWidth(4);
+	std::cout << allParticles.size();
+	for (unsigned int i = 0; i < allParticles.size(); i++) {
+		l = (float) i; // the level of the current flock
+		m = (n - l) / n;
+		// set color
+		glColor3f(m, m, m);
+		std::cout << "\nlevel : " << i << "\n";
+		for(unsigned int j = 0; j < allParticles[i].size(); j++) {
+			std::cout << allParticles[i][j].getPos()[0] << "\t" << allParticles[i][j].getPos()[1] << "\t" << allParticles[i][j].getPos()[2] << "\n";
+			IT(1, 1, 1, allParticles[i][j].getPos()[0], allParticles[i][j].getPos()[1], allParticles[i][j].getPos()[2], 0, 0, 1, 0);
+		}
+	}
 
-	IT(1,1,1, 0,0,0, 0,0,1,0);
-	
 	glFlush();
 	glutSwapBuffers();
 }
@@ -79,7 +84,7 @@ std::vector<Flock> makeAllParticles(std::string& fileName) {
 }
 
 int main(int argc, char* argv[]) {
-    /*if (argc != 3) {
+    if (argc != 3) {
         std::cout << "There were not engough parameters.\n"
 		    << "There needs to be <(CPU|GPU) (input file)>.\n"
 			<< "The user provided " << argc << ".\nAnd they are:\n";
@@ -93,12 +98,14 @@ int main(int argc, char* argv[]) {
 	
 	srand(time(NULL));
 	std::string file(argv[2]);
-	std::vector<Flock> allParticles = makeAllParticles(file);*/
+	allParticles = makeAllParticles(file);
+	n = (float) allParticles.size();
+
 
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
 	glutInitWindowSize(W, H);
-	glutCreateWindow("Shapes");
+	glutCreateWindow("Experiment");
 	glutDisplayFunc(display);
 	glEnable(GL_DEPTH_TEST);
 
