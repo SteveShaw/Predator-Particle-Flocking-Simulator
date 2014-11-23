@@ -11,11 +11,14 @@ class FlockItem{
 		int amnt;
 		int foodChainLevel;
 		std::string pName;
+		void addSingleParticle(float px, float py, float pz);
 		void initVecs(int nMembers);
 		void move(unsigned int index);
     public:
         FlockItem(int level, std::string& name, int nMembers);
 		
+		void removeParticleI(unsigned int index);
+		void decrementAmnt();
 		int getAmnt();
 		int getLevel();
 		std::string getPName();
@@ -42,7 +45,7 @@ class FlockItem{
 		void setRotEpsilon(float n_y, int index);
 
 		void move();
-		void populate();
+		void populate(float ax, float ay, float az);
 		// eat prey should be called before move
 		void eatPrey(FlockItem prey);
 };
