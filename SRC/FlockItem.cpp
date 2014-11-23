@@ -11,15 +11,14 @@ void FlockItem::initVecs(int nMembers) {
 	posX = Vec(nMembers);
 	posY = Vec(nMembers);
 	posZ = Vec(nMembers);
-	rotX = Vec(nMembers);
-	rotY = Vec(nMembers);
-	rotZ = Vec(nMembers);
+	rotTheta = Vec(nMembers);
+	rotEpsilon = Vec(nMembers);
 	vels = Vec(nMembers);
 }
 
 FlockItem::FlockItem(int level, std::string& name, int nMembers) {
 	initVecs(nMembers);
-    // 7 random floats [-x, x] for pos, [0, 2pi] rot, [-2, 2] vel
+    // 7 random floats [-x, x] for pos, [0, pi] rotTheta, [0, 2pi) rotElpson, [-2, 2] vel
 	for (int i = 0; i < nMembers; i++) {
 		float r1 = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
 		float r2 = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
@@ -31,23 +30,20 @@ FlockItem::FlockItem(int level, std::string& name, int nMembers) {
 		r2 = (r2 * level) - ((float) level / 2.0f);
 		r3 = (r3 * level) - ((float) level / 2.0f);
 	
-		setPosX(r1, i);
-		setPosY(r2, i);
-		setPosZ(r3, i);
+		posX[i] = r1;
+		posY[i] = r2;
+		posZ[i] = r3;
 
 		r1 = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
 		r2 = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-		r3 = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
 		r1 = (r1 * (2 * 3.14f));
-		r2 = (r1 * (2 * 3.14f));
-		r3 = (r1 * (2 * 3.14f));
+		r2 = (r2 * 3.14f);
 	
-		setRotX(r1, i);
-		setRotY(r2, i);
-		setRotZ(r3, i);
+		setRotTheta(r1, i);
+		setRotEpsilon(r2, i);
 	
 		r1 = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-		setVel(((r1 + level) * 4.0f) - 2.0f, i);
+		vels[i] = ((r1 + level) * 4.0f) - 2.0f;
 	}
 	amnt = nMembers;
 	foodChainLevel = level;
@@ -66,16 +62,12 @@ Vec FlockItem::getPosZ() {
 	return posZ;
 }
 
-Vec FlockItem::getRotX() {
-	return rotX;
+Vec FlockItem::getRotTheta() {
+	return rotTheta;
 }
 
-Vec FlockItem::getRotY() {
-	return rotY;
-}
-
-Vec FlockItem::getRotZ() {
-	return rotZ;
+Vec FlockItem::getRotEpsilon() {
+	return rotEpsilon;
 }
 
 Vec FlockItem::getVels() {
@@ -94,48 +86,36 @@ float FlockItem::getPosZ(int index) {
 	return posZ[index];
 }
 
-float FlockItem::getRotX(int index) {
-	return rotX[index];
+float FlockItem::getRotTheta(int index) {
+	return rotTheta[index];
 }
 
-float FlockItem::getRotY(int index) {
-	return rotY[index];
-}
-
-float FlockItem::getRotZ(int index) {
-	return rotZ[index];
+float FlockItem::getRotEpsilon(int index) {
+	return rotEpsilon[index];
 }
 
 float FlockItem::getVels(int index) {
 	return vels[index];
 }
 
-void FlockItem::setPosX(float n_x, int index) {
-	posX[index] = n_x;
+void FlockItem::addPosX(float n_x, int index) {
+	posX[index] += n_x;
 }
 
-void FlockItem::setPosY(float n_y, int index) {
-	posY[index] = n_y;
+void FlockItem::addPosY(float n_y, int index) {
+	posY[index] += n_y;
 }
 
-void FlockItem::setPosZ(float n_z, int index) {
-	posZ[index] = n_z;
+void FlockItem::addPosZ(float n_z, int index) {
+	posZ[index] += n_z;
 }
 
-void FlockItem::setRotX(float n_x, int index) {
-	rotX[index] = n_x;
+void FlockItem::setRotTheta(float n_x, int index) {
+	rotTheta[index] = n_x;
 }
 
-void FlockItem::setRotY(float n_y, int index) {
-	rotY[index] = n_y;
-}
-
-void FlockItem::setRotZ(float n_z, int index) {
-	rotZ[index] = n_z;
-}
-
-void FlockItem::setVel(float n_v, int index) {
-	vels[index] = n_v;
+void FlockItem::setRotEpsilon(float n_y, int index) {
+	rotEpsilon[index] = n_y;
 }
 
 int FlockItem::getAmnt() {
@@ -148,4 +128,24 @@ int FlockItem::getLevel() {
 
 std::string FlockItem::getPName() {
 	return pName;
+}
+
+void FlockItem::move(unsigned int index) {
+	// x += precentX * vel
+	// y += percentY * vel
+	// z += percentZ * vel
+	// the spherical cordianates of the roation
+	float amntX, amntY, amntZ;
+	amntX = sin(rotTheta[index]) * cos(rotEpsilon[index]);
+	amntY = sin(rotTheta[index]) * sin(rotEpsilon[index]);
+	amntZ = cos(rotTheta[index]);
+	addPosX((amntX * vels[index]), index);
+	addPosY((amntY * vels[index]), index);
+	addPosZ((amntZ * vels[index]), index);
+}
+
+void FlockItem::move() {
+	for (unsigned int i = 0; i < amnt; i++) {
+		move(i);
+	}
 }

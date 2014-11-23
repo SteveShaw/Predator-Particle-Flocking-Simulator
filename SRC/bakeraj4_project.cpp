@@ -18,6 +18,15 @@ const int W = 512, H = 512, SLICES = 25, STACKS = 20;
 std::vector<Flock> allParticles;
 Colors c;
 
+void display(void); // forward declaration
+
+void moveAllFlocks() {
+	for (Flock& f: allParticles) {
+		f.move();
+	}
+	display(); // HERE FOR NOW. ONLY FOR ANIMATION
+}
+
 void sphere() {
 	glutSolidSphere(0.01, SLICES, STACKS);
 }
@@ -50,15 +59,16 @@ void display(void) {
 		setColor(i);
 		std::cout << "\nlevel : " << i << "\n";
 		for(unsigned int j = 0; j < allParticles[i].getAmnt(); j++) {
-			std::cout << allParticles[i].getPosX(j) << "\t" << allParticles[i].getPosY(j) << "\t" << allParticles[i].getRotZ(j) << "\n";
-			IT(1, 1, 1, allParticles[i].getPosX(j), allParticles[i].getPosY(j), allParticles[i].getPosY(j), 0, 0, 1, 0);
+			std::cout << allParticles[i].getPosX(j) << "\t" << allParticles[i].getPosY(j) << "\t" << allParticles[i].getPosZ(j) << "\n";
+			IT(1, 1, 1, allParticles[i].getPosX(j), allParticles[i].getPosY(j), allParticles[i].getPosZ(j), 0, 0, 1, 0);
 		}
 	}
 
 	glFlush();
 	glutSwapBuffers();
+	// hunting here
+	moveAllFlocks();
 }
-
 
 // static bool continueSimulatoion = true	
 
@@ -145,6 +155,28 @@ void setUpColors() {
 	color.clear();
 }
 
+void openGLSetUp() {
+	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
+	glutInitWindowSize(W, H);
+	glutCreateWindow("Experiment");
+	glutDisplayFunc(display);
+	glEnable(GL_DEPTH_TEST);
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glOrtho(-2, 2, -2, 2, -10, 10);
+	glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_LIGHTING);
+	glEnable(GL_LIGHT0);
+	glEnable(GL_NORMALIZE);
+	glEnable(GL_COLOR_MATERIAL);
+	glShadeModel(GL_SMOOTH);
+	float gray[4] = {0.5,0.5,0.5,1};
+	float pos[4] = {0,0,10,1};
+	glLightfv(GL_LIGHT0, GL_AMBIENT, gray);
+	glLightfv(GL_LIGHT0, GL_POSITION, pos);
+}
+
 int main(int argc, char* argv[]) {
     if (argc != 3) {
         std::cout << "There were not engough parameters.\n"
@@ -162,32 +194,8 @@ int main(int argc, char* argv[]) {
 	std::string file(argv[2]);
 	allParticles = makeAllParticles(file);
 	setUpColors();
-
 	glutInit(&argc, argv);
-	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
-	glutInitWindowSize(W, H);
-	glutCreateWindow("Experiment");
-	glutDisplayFunc(display);
-	glEnable(GL_DEPTH_TEST);
-
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glOrtho(-2, 2, -2, 2, -10, 10);
-
-	glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
-	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_LIGHTING);
-	glEnable(GL_LIGHT0);
-	glEnable(GL_NORMALIZE);
-	glEnable(GL_COLOR_MATERIAL);
-	glShadeModel(GL_SMOOTH);
-	float white[4] = {1,1,1,1};
-	float gray[4] = {0.5,0.5,0.5,1};
-	float black[4] = {0,0,0,1};
-	float pos[4] = {0,0,10,1};
-	glLightfv(GL_LIGHT0, GL_AMBIENT, gray);
-	glLightfv(GL_LIGHT0, GL_POSITION, pos);
-
+	openGLSetUp();
 	glutMainLoop();
 
 //	CL cl = createCL("file.cl", "function_name", &allParticles);

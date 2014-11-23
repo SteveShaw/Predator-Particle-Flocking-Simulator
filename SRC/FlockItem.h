@@ -7,11 +7,12 @@
 
 class FlockItem{
     private:
-        Vec posX, posY, posZ, rotX, rotY, rotZ, vels;
+        Vec posX, posY, posZ, rotTheta, rotEpsilon, vels;
 		int amnt;
 		int foodChainLevel;
 		std::string pName;
 		void initVecs(int nMembers);
+		void move(unsigned int index);
     public:
         FlockItem(int level, std::string& name, int nMembers);
 		
@@ -22,24 +23,26 @@ class FlockItem{
 		Vec getPosX();
 		Vec getPosY();
 		Vec getPosZ();
-		Vec getRotX();
-		Vec getRotY();
-		Vec getRotZ();
+		Vec getRotTheta();
+		Vec getRotEpsilon();
 		Vec getVels();
 
 		float getPosX(int index);
 		float getPosY(int index);
 		float getPosZ(int index);
-		float getRotX(int index);
-		float getRotY(int index);
-		float getRotZ(int index);
+		float getRotTheta(int index);
+		float getRotEpsilon(int index);
 		float getVels(int index);
 
-		void setPosX(float n_x, int index);
-		void setPosY(float n_y, int index);
-		void setPosZ(float n_z, int index);
-		void setRotX(float n_x, int index);
-		void setRotY(float n_y, int index);
-		void setRotZ(float n_z, int index);
-		void setVel(float n_v, int index);
+		void addPosX(float n_x, int index);
+		void addPosY(float n_y, int index);
+		void addPosZ(float n_z, int index);
+
+		void setRotTheta(float n_x, int index);
+		void setRotEpsilon(float n_y, int index);
+
+		void move();
+		void populate();
+		// eat prey should be called before move
+		void eatPrey(FlockItem prey);
 };
