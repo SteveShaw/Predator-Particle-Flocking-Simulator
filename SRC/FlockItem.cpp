@@ -27,7 +27,7 @@ void FlockItem::addSingleParticle(float px, float py, float pz) {
 	r2 = (r2 * 3.14f);
 	rotTheta.push_back(r1);
 	rotEpsilon.push_back(r2);
-	vels.push_back(((r3 + foodChainLevel) * 4.0f) - 2.0f;
+	vels.push_back(((r3 + foodChainLevel) * 4.0f) - 2.0f);
 }
 
 FlockItem::FlockItem(int level, std::string& name, int nMembers) {
