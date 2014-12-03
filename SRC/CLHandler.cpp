@@ -12,6 +12,17 @@ typedef std::vector<float> floats;
 #define SEPERATE_W 0.5
 #define COHESION_W 0.5
 
+/*
+int getDevType(const std::string& device) throw(std::runtime_error) {
+    const std::string DevTypes = "CPUGPUACC";
+    switch (DevTypes.find(device)) {
+    case 0: return CL_DEVICE_TYPE_CPU;
+    case 3: return CL_DEVICE_TYPE_GPU;
+    case 6: return CL_DEVICE_TYPE_ACCELERATOR;
+    }
+    throw std::runtime_error("Invalid device type specified");
+} */
+
 void CLHandler::resetAverages() {
 	avePosX = floats(particles->size(), 0.0f);
 	avePosY = floats(particles->size(), 0.0f);
@@ -22,6 +33,17 @@ void CLHandler::resetAverages() {
 
 void CLHandler::calcAverages() {
 	// OpenCL HERE
+	// for (itn i =0; i < partilces.size)(;i++) {
+	//		cl::Buffer pxBuff = queue.makeBuffer(&(particles->at(i).getPosx()[0]), sizeof(float) * particles->at(i).size(), queue.ROFlags);
+	//		cl::Buffer pyBuff = queue.makeBuffer(&(particles->at(i).getPosy()[0]), sizeof(float) * particles->at(i).size(), queue.ROFlags);
+	//		cl::Buffer pzBuff = queue.makeBuffer(&(particles->at(i).getPosz()[0]), sizeof(float) * particles->at(i).size(), queue.ROFlags);
+	//		// vector average x, y, z. 
+	//		// vecotr averae rott rote
+	//		// buffers for those two
+	//		functs[0](pxBuff, pyBuff, pzBuff, avPosBuff, aveRotBuff, particles->at(i).size());
+	//		// enqueue the averages back
+	//		// save them
+	// }
 }
 
 floats CLHandler::hunt(int myIndex, int preyIndex) {
