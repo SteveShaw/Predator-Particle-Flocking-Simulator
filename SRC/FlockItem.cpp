@@ -3,6 +3,7 @@
 #include <vector>
 #include "FlockItem.h"
 #include <stdlib.h>
+#include <math.h>
 #include <iostream>
 
 #define Vec std::vector<float>
@@ -23,8 +24,8 @@ void FlockItem::addSingleParticle(float px, float py, float pz) {
 	float r1 = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
 	float r2 = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
 	float r3 = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-	r1 = (r1 * (2 * 3.14f));
-	r2 = (r2 * 3.14f);
+	r1 = (r1 * (2 * 3.14f)) - 3.14f;
+	r2 = (r2 * 3.14f) - (3.14f / 2.0f);
 	rotTheta.push_back(r1);
 	rotEpsilon.push_back(r2);
 	vels.push_back(((r3 + foodChainLevel) * 4.0f) - 2.0f);
@@ -40,9 +41,9 @@ FlockItem::FlockItem(int level, std::string& name, int nMembers) {
 	
 		// The range based om the current view point is [-2,2]
 
-		r1 = (r1 * level) - ((float) level / 2.0f);
-		r2 = (r2 * level) - ((float) level / 2.0f);
-		r3 = (r3 * level) - ((float) level / 2.0f);
+		r1 = (r1 * (level + 1.0f)) - ((float) (level + 1.0f) / 2.0f);
+		r2 = (r2 * (level + 1.0f)) - ((float) (level + 1.0f) / 2.0f);
+		r3 = (r3 * (level + 1.0f)) - ((float) (level + 1.0f) / 2.0f);
 	
 		posX[i] = r1;
 		posY[i] = r2;
@@ -124,6 +125,14 @@ void FlockItem::addPosZ(float n_z, int index) {
 	posZ[index] += n_z;
 }
 
+void FlockItem::addRotT(float n_t, int index) {
+	rotTheta[index] = fmod(rotTheta[index], 3.14f);
+}
+
+void FlockItem::addRotE(float n_e, int index) {
+	rotEpsilon[index] = fmod(rotEpsilon[index], (3.14f * 2.0f));
+}
+
 void FlockItem::setRotTheta(float n_x, int index) {
 	rotTheta[index] = n_x;
 }
@@ -186,7 +195,7 @@ void FlockItem::populate(float ax, float ay, float az) {
 }
 
 static float THRESHHOLD = 0.005f;
-void FlockItem::eatPrey(FlockItem prey) {
+void FlockItem::eatPrey(FlockItem& prey) {
 	for (unsigned int i = 0; i < amnt; i++) {
 		for (unsigned int j = 0; j < prey.getAmnt(); j++) {
 			float dist = sqrt(

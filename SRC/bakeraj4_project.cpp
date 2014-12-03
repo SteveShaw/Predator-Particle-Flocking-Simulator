@@ -9,6 +9,8 @@
 #include <fstream>
 #include <unordered_map>
 #include <GL/freeglut.h>
+#include <iterator>
+// #include "CL/cl.hpp"
 #pragma once
 
 typedef FlockItem Flock;
@@ -21,9 +23,13 @@ Colors c;
 void display(void); // forward declaration
 
 void moveAllFlocks() {
-	for (Flock& f: allParticles) {
-		f.move();
+	for (unsigned int i = allParticles.size(); i > 0; i--) {
+		if (i != 1 ) {
+			allParticles[i - 1].eatPrey(allParticles[i - 2]);
+		}
+		allParticles[i - 1].move();
 	}
+
 	display(); // HERE FOR NOW. ONLY FOR ANIMATION
 }
 
@@ -43,7 +49,7 @@ void IT(double sx, double sy, double sz, double dx, double dy, double dz,
 
 void setColor(unsigned int num) {
 	glColor3f((GLfloat)c[num][0], (GLfloat)c[num][1], (GLfloat)c[num][2]);
-	std::cout << "COLOR:\n" << c[num][0] << "\t" << c[num][1] << "\t" << c[num][2] << "\n";
+	// std::cout << "COLOR:\n" << c[num][0] << "\t" << c[num][1] << "\t" << c[num][2] << "\n";
 }
 
 void display(void) {
@@ -57,7 +63,7 @@ void display(void) {
 	std::cout << allParticles.size();
 	for (unsigned int i = 0; i < allParticles.size(); i++) {
 		setColor(i);
-		std::cout << "\nlevel : " << i << "\n";
+		std::cout << "\nlevel : " << i << "\t Has " << allParticles[i].getAmnt() << "many partiles.\n";
 		for(unsigned int j = 0; j < allParticles[i].getAmnt(); j++) {
 			std::cout << allParticles[i].getPosX(j) << "\t" << allParticles[i].getPosY(j) << "\t" << allParticles[i].getPosZ(j) << "\n";
 			IT(1, 1, 1, allParticles[i].getPosX(j), allParticles[i].getPosY(j), allParticles[i].getPosZ(j), 0, 0, 1, 0);
@@ -66,7 +72,7 @@ void display(void) {
 
 	glFlush();
 	glutSwapBuffers();
-	// hunting here
+	// flocking here
 	moveAllFlocks();
 }
 
@@ -201,3 +207,10 @@ int main(int argc, char* argv[]) {
 //	CL cl = createCL("file.cl", "function_name", &allParticles);
 //	EXP exp = createProject(cl, flock)
 }
+
+
+
+// end conditions
+// 1. There are no particles at a specific level
+// 2. If any level gets to the point where there are 2X than what started
+// 3. If the simulation goes on for X many minutes. (X is an input float)

@@ -40,6 +40,8 @@ class FlockItem{
 		void addPosX(float n_x, int index);
 		void addPosY(float n_y, int index);
 		void addPosZ(float n_z, int index);
+		void addRotT(float n_t, int index);
+		void addRotE(float n_e, int index);
 
 		void setRotTheta(float n_x, int index);
 		void setRotEpsilon(float n_y, int index);
@@ -47,5 +49,5 @@ class FlockItem{
 		void move();
 		void populate(float ax, float ay, float az);
 		// eat prey should be called before move
-		void eatPrey(FlockItem prey);
+		void eatPrey(FlockItem& prey);
 };
