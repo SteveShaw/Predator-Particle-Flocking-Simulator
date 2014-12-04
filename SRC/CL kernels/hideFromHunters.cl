@@ -1,5 +1,5 @@
 #pragma OPENCL EXTENSION cl_khr_fp64 : enable __kernel
-void seperate(__global float* posX, __global float* posY, __global float* posZ,
+void hideFromHunters(__global float* posX, __global float* posY, __global float* posZ,
     __gloabal float* rotT, __gloabal float* rotE __global float* vel,
     __global float* predPos, int sizePrey, __global float* hideE,
     __gobal float* hideT) { // predPos is the average x, y, z

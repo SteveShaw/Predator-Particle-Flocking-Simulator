@@ -1,9 +1,9 @@
 #pragma OPENCL EXTENSION cl_khr_fp64 : enable __kernel
-void seperate(__global float* posX, __global float* posY, __global float* posZ,
-    __gloabal float* rotT, __gloabal float* rotE __global float* vel,
-    __global float* predPosX, __global float* predPosY,
-    __global float* predPosZ, int sizePrey, int sizePred __global float* hideE,
-    __gobal float* hideT) {
+void hideFromHunter(__global float* posX, __global float* posY,
+    __global float* posZ, __gloabal float* rotT,
+    __gloabal float* rotE __global float* vel, __global float* predPosX,
+    __global float* predPosY, __global float* predPosZ, int sizePrey,
+    int sizePred __global float* hideE, __gobal float* hideT) {
     
 	size_t i = get_local_id(0);
 	if (i < sizePrey) {
