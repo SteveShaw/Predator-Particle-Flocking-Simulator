@@ -61,8 +61,13 @@ FlockItem::FlockItem(int level, std::string& name, int nMembers) {
 		vels[i] = ((r1 + level) * 4.0f) - 2.0f;
 	}
 	amnt = nMembers;
+	threshold = 2 * nMembers;
 	foodChainLevel = level;
 	pName = name;
+}
+
+int FlockItem::getThreshold() {
+	return threshold;
 }
 
 Vec FlockItem::getPosX() {

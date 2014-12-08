@@ -1,8 +1,8 @@
 #pragma OPENCL EXTENSION cl_khr_fp64 : enable __kernel
 void hideFromHunters(__global float* posX, __global float* posY, __global float* posZ,
     __gloabal float* rotT, __gloabal float* rotE __global float* vel,
-    __global float* predPos, int sizePrey, __global float* hideE,
-    __gobal float* hideT) { // predPos is the average x, y, z
+    __global float* predPos, int sizePrey, __global float* hideT,
+    __gobal float* hideE) { // predPos is the average x, y, z
     
 	size_t i = get_local_id(0);
 	if (i < sizePrey) {

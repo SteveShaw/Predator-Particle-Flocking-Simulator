@@ -8,7 +8,7 @@
 class FlockItem{
     private:
         Vec posX, posY, posZ, rotTheta, rotEpsilon, vels;
-		int amnt;
+		int amnt, threshold;
 		int foodChainLevel;
 		std::string pName;
 		void addSingleParticle(float px, float py, float pz);
@@ -20,6 +20,7 @@ class FlockItem{
 		void removeParticleI(unsigned int index);
 		void decrementAmnt();
 		int getAmnt();
+		int getThreshold();
 		int getLevel();
 		std::string getPName();
 		

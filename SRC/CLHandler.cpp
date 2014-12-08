@@ -50,6 +50,8 @@ void CLHandler::calcAverages() {
 		avePosX[i] = avePos[0];
 		avePosY[i] = avePos[1];
 		avePosZ[i] = avePos[2];
+		aveRotT[i] = aveRot[0];
+		aveRotE[i] = aveRot[1];
 	}
 }
 
@@ -80,36 +82,127 @@ std::vector<floats> CLHandler::hunt(int myIndex, int preyIndex) {
 
 std::vector<floats> CLHandler::hideFromClosestPackMember(int myIndex, int predIndex) {
 	std::vector<floats> ret;
-	// OpenCL HERE
+	floats t = floats(particles->at(myIndex).getAmnt(), 0.0f), e = floats(particles->at(myIndex).getAmnt(), 0.0f);
+	cl::Buffer preyXBuff = queues[2].makeBuffer(&(particles->at(myIndex).getPosX()[0]), sizeof(float) * particles->at(myIndex).getAmnt(), queues[2].ROFlags);
+	cl::Buffer preyYBuff = queues[2].makeBuffer(&(particles->at(myIndex).getPosY()[0]), sizeof(float) * particles->at(myIndex).getAmnt(), queues[2].ROFlags);
+	cl::Buffer preyZBuff = queues[2].makeBuffer(&(particles->at(myIndex).getPosZ()[0]), sizeof(float) * particles->at(myIndex).getAmnt(), queues[2].ROFlags);
+	cl::Buffer preyRotT = queues[2].makeBuffer(&(particles->at(myIndex).getRotTheta()[0]), sizeof(float)* particles->at(myIndex).getAmnt(), queues[2].ROFlags);
+	cl::Buffer preyRotE = queues[2].makeBuffer(&(particles->at(myIndex).getRotEpsilon()[0]), sizeof(float)* particles->at(myIndex).getAmnt(), queues[2].ROFlags);
+	cl::Buffer preyVel = queues[2].makeBuffer(&(particles->at(myIndex).getVels()[0]), sizeof(float)* particles->at(myIndex).getAmnt(), queues[2].ROFlags);
+	cl::Buffer predXBuff = queues[2].makeBuffer(&(particles->at(predIndex).getPosX()[0]), sizeof(float) * particles->at(predIndex).getAmnt(), queues[2].ROFlags);
+	cl::Buffer predYBuff = queues[2].makeBuffer(&(particles->at(predIndex).getPosY()[0]), sizeof(float) * particles->at(predIndex).getAmnt(), queues[2].ROFlags);
+	cl::Buffer predZBuff = queues[2].makeBuffer(&(particles->at(predIndex).getPosZ()[0]), sizeof(float) * particles->at(predIndex).getAmnt(), queues[2].ROFlags);
+	cl::Buffer preyTBuff = queues[2].makeBuffer(&(t[0]), sizeof(float) * t.size(), queues[2].ROFlags);
+	cl::Buffer preyEBuff = queues[2].makeBuffer(&(e[0]), sizeof(float) * e.size(), queues[2].ROFlags);
+	cl::NDRange globalRange(particles->at(myIndex).getAmnt());
+	cl::KernelFunctor funct(kernels[2], queues[2].getQueue(), cl::NullRange,
+			globalRange, cl::NullRange);
+	funct(preyXBuff, preyYBuff, preyZBuff, preyRotT, preyRotE, preyVel, predXBuff, predYBuff,predZBuff, particles->at(myIndex).getAmnt(), particles->at(predIndex).getAmnt(), preyTBuff, preyEBuff);
+	queues[2].getQueue().enqueueMapBuffer(preyTBuff, CL_TRUE, CL_MAP_READ, 0, t.size() * sizeof(float));
+	queues[2].getQueue().enqueueMapBuffer(preyEBuff, CL_TRUE, CL_MAP_READ, 0, e.size() * sizeof(float));
+	ret.push_back(t);
+	ret.push_back(e);
 	return ret;
 }
 
 std::vector<floats> CLHandler::hideFromPack(int myIndex, int predIndex) {
 	std::vector<floats> ret;
-	// OpenCL HERE
+	floats t = floats(particles->at(myIndex).getAmnt(), 0.0f), e = floats(particles->at(myIndex).getAmnt(), 0.0f);
+	cl::Buffer preyXBuff = queues[3].makeBuffer(&(particles->at(myIndex).getPosX()[0]), sizeof(float) * particles->at(myIndex).getAmnt(), queues[3].ROFlags);
+	cl::Buffer preyYBuff = queues[3].makeBuffer(&(particles->at(myIndex).getPosY()[0]), sizeof(float) * particles->at(myIndex).getAmnt(), queues[3].ROFlags);
+	cl::Buffer preyZBuff = queues[3].makeBuffer(&(particles->at(myIndex).getPosZ()[0]), sizeof(float) * particles->at(myIndex).getAmnt(), queues[3].ROFlags);
+	cl::Buffer preyRotT = queues[3].makeBuffer(&(particles->at(myIndex).getRotTheta()[0]), sizeof(float) * particles->at(myIndex).getAmnt(), queues[3].ROFlags);
+	cl::Buffer preyRotE = queues[3].makeBuffer(&(particles->at(myIndex).getRotEpsilon()[0]), sizeof(float) * particles->at(myIndex).getAmnt(), queues[3].ROFlags);
+	cl::Buffer preyVel = queues[3].makeBuffer(&(particles->at(myIndex).getVels()[0]), sizeof(float) * particles->at(myIndex).getAmnt(), queues[3].ROFlags);
+	floats predPos = floats(3);
+	predPos[0] = avePosX[predIndex];
+	predPos[1] = avePosY[predIndex];
+	predPos[2] = avePosZ[predIndex];
+	cl::Buffer predPosBuff = queues[3].makeBuffer(&(predPos[0]), sizeof(float) * 3, queues[3].ROFlags);
+	cl::Buffer preyTBuff = queues[3].makeBuffer(&(t[0]), sizeof(float) * t.size(), queues[3].ROFlags);
+	cl::Buffer preyEBuff = queues[3].makeBuffer(&(e[0]), sizeof(float) * e.size(), queues[3].ROFlags);
+	cl::NDRange globalRange(particles->at(myIndex).getAmnt());
+	cl::KernelFunctor funct(kernels[3], queues[3].getQueue(), cl::NullRange,
+			globalRange, cl::NullRange);
+	funct(preyXBuff, preyYBuff, preyZBuff, preyRotT, preyRotE, preyVel, predPosBuff, particles->at(myIndex).getAmnt(), preyTBuff, preyEBuff);
+	queues[3].getQueue().enqueueMapBuffer(preyTBuff, CL_TRUE, CL_MAP_READ, 0, t.size() * sizeof(float));
+	queues[3].getQueue().enqueueMapBuffer(preyEBuff, CL_TRUE, CL_MAP_READ, 0, e.size() * sizeof(float));
+	ret.push_back(t);
+	ret.push_back(e);
 	return ret;
 }
 
 std::vector<floats> CLHandler::alignment(int myIndex) {
 	std::vector<floats> ret;
-	// OpenCl HERE
+	floats t = floats(particles->at(myIndex).getAmnt(), 0.0f), e = floats(particles->at(myIndex).getAmnt(), 0.0f);
+	cl::Buffer myRotT = queues[4].makeBuffer(&(particles->at(myIndex).getRotTheta()[0]), sizeof(float) * particles->at(myIndex).getAmnt(), queues[4].ROFlags);
+	cl::Buffer myRotE = queues[4].makeBuffer(&(particles->at(myIndex).getRotEpsilon()[0]), sizeof(float) * particles->at(myIndex).getAmnt(), queues[4].ROFlags);
+	floats aveRots;
+	aveRots.push_back(aveRotT[myIndex]);
+	aveRots.push_back(aveRotE[myIndex]);
+	cl::Buffer aveRotsBuff = queues[4].makeBuffer(&(aveRots[0]), sizeof(float) * 2, queues[4].ROFlags);
+	cl::Buffer retTBuff = queues[4].makeBuffer(&(t[0]), sizeof(float) * t.size(), queues[4].ROFlags);
+	cl::Buffer retEBuff = queues[4].makeBuffer(&(e[0]), sizeof(float) * e.size(), queues[4].ROFlags);
+	cl::NDRange globalRange(particles->at(myIndex).getAmnt());
+	cl::KernelFunctor funct(kernels[3], queues[4].getQueue(), cl::NullRange,
+			globalRange, cl::NullRange);
+	funct(myRotT, myRotE, aveRotsBuff, particles->at(myIndex).getAmnt(), retTBuff, retEBuff);
+	queues[3].getQueue().enqueueMapBuffer(retTBuff, CL_TRUE, CL_MAP_READ, 0, t.size() * sizeof(float));
+	queues[3].getQueue().enqueueMapBuffer(retEBuff, CL_TRUE, CL_MAP_READ, 0, e.size() * sizeof(float));
+	ret.push_back(t);
+	ret.push_back(e);
 	return ret;
 }
 
 std::vector<floats> CLHandler::seperation(int myIndex) {
 	std::vector<floats> ret;
-	// OpenCL HERE
+	floats t = floats(particles->at(myIndex).getAmnt(), 0.0f), e = floats(particles->at(myIndex).getAmnt(), 0.0f);
+	floats avePos;
+	avePos.push_back(avePosX[myIndex]);
+	avePos.push_back(avePosY[myIndex]);
+	avePos.push_back(avePosZ[myIndex]);
+	// posXBuff
+	// posYBuff
+	// posZBuff
+	// rotTBuff
+	// rotEBuff
+	// myIndexAvePos
+	// size
+	// vel
+	// retT
+	// retE
+
+	ret.push_back(t);
+	ret.push_back(e);
 	return ret;
 }
 
 std::vector<floats> CLHandler::cohesion(int myIndex) {
 	std::vector<floats> ret;
-	// OpenCL HERE
+	floats t = floats(particles->at(myIndex).getAmnt(), 0.0f), e = floats(particles->at(myIndex).getAmnt(), 0.0f);
+	floats avePos;
+	avePos.push_back(avePosX[myIndex]);
+	avePos.push_back(avePosY[myIndex]);
+	avePos.push_back(avePosZ[myIndex]);
+	// posXBuff
+	// posYBuff
+	// posZBuff
+	// rotTBuff
+	// rotEBuff
+	// myIndexAvePos
+	// size
+	// vel
+	// retT
+	// retE
+
+
+	ret.push_back(t);
+	ret.push_back(e);
 	return ret;
 }
 
 void CLHandler::oneIterationOfFlocking() {
-	// get the average posistions and the rots to the vectors
+	calcAverages();
 	floats deltaRotE;
 	floats deltaRotT;
 	std::vector<floats> tmp;
@@ -171,6 +264,7 @@ void CLHandler::oneIterationOfFlocking() {
 			particles->at(j).addRotE(deltaRotE[j], j);
 		}
 	} // [0, pi] rotTheta, [0, 2pi) rotElpson
+	resetAverages();
 }
 
 

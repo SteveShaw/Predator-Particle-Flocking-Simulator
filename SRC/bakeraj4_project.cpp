@@ -22,6 +22,16 @@ Colors c;
 
 void display(void); // forward declaration
 
+bool continueExperiment() {
+	for (unsigned int i = 0; i < allParticles.size(); i++) {
+		if (allParticles[i].getAmnt() == 0 || allParticles[i].getAmnt() > allParticles[i].getThreshold()) {
+			return false;
+		}
+	}
+	return true;
+}
+
+
 void moveAllFlocks() {
 	for (unsigned int i = allParticles.size(); i > 0; i--) {
 		if (i != 1 ) {
@@ -30,7 +40,9 @@ void moveAllFlocks() {
 		allParticles[i - 1].move();
 	}
 
+	// if (continueExperiment) {
 	display(); // HERE FOR NOW. ONLY FOR ANIMATION
+	// }
 }
 
 void sphere() {
