@@ -144,11 +144,11 @@ std::vector<floats> CLHandler::alignment(int myIndex) {
 	cl::Buffer retTBuff = queues[4].makeBuffer(&(t[0]), sizeof(float) * t.size(), queues[4].ROFlags);
 	cl::Buffer retEBuff = queues[4].makeBuffer(&(e[0]), sizeof(float) * e.size(), queues[4].ROFlags);
 	cl::NDRange globalRange(particles->at(myIndex).getAmnt());
-	cl::KernelFunctor funct(kernels[3], queues[4].getQueue(), cl::NullRange,
+	cl::KernelFunctor funct(kernels[4], queues[4].getQueue(), cl::NullRange,
 			globalRange, cl::NullRange);
 	funct(myRotT, myRotE, aveRotsBuff, particles->at(myIndex).getAmnt(), retTBuff, retEBuff);
-	queues[3].getQueue().enqueueMapBuffer(retTBuff, CL_TRUE, CL_MAP_READ, 0, t.size() * sizeof(float));
-	queues[3].getQueue().enqueueMapBuffer(retEBuff, CL_TRUE, CL_MAP_READ, 0, e.size() * sizeof(float));
+	queues[4].getQueue().enqueueMapBuffer(retTBuff, CL_TRUE, CL_MAP_READ, 0, t.size() * sizeof(float));
+	queues[4].getQueue().enqueueMapBuffer(retEBuff, CL_TRUE, CL_MAP_READ, 0, e.size() * sizeof(float));
 	ret.push_back(t);
 	ret.push_back(e);
 	return ret;
@@ -161,17 +161,21 @@ std::vector<floats> CLHandler::seperation(int myIndex) {
 	avePos.push_back(avePosX[myIndex]);
 	avePos.push_back(avePosY[myIndex]);
 	avePos.push_back(avePosZ[myIndex]);
-	// posXBuff
-	// posYBuff
-	// posZBuff
-	// rotTBuff
-	// rotEBuff
-	// myIndexAvePos
-	// size
-	// vel
-	// retT
-	// retE
-
+	cl::Buffer posXBuff = queues[5].makeBuffer(&(particles->at(myIndex).getPosX()[0]), sizeof(float) * particles->at(myIndex).getAmnt(), queues[5].ROFlags);
+	cl::Buffer posYBuff = queues[5].makeBuffer(&(particles->at(myIndex).getPosY()[0]), sizeof(float) * particles->at(myIndex).getAmnt(), queues[5].ROFlags);
+	cl::Buffer posZBuff = queues[5].makeBuffer(&(particles->at(myIndex).getPosZ()[0]), sizeof(float) * particles->at(myIndex).getAmnt(), queues[5].ROFlags);
+	cl::Buffer rotTBuff = queues[5].makeBuffer(&(particles->at(myIndex).getRotTheta()[0]), sizeof(float) * particles->at(myIndex).getAmnt(), queues[5].ROFlags); 
+	cl::Buffer rotEBuff = queues[5].makeBuffer(&(particles->at(myIndex).getRotEpsilon()[0]), sizeof(float) * particles->at(myIndex).getAmnt(), queues[5].ROFlags); 
+	cl::Buffer avePosBuff = queues[5].makeBuffer(&(avePos[0]), sizeof(float), queues[5].ROFlags);
+	cl::Buffer velBuff = queues[5].makeBuffer(&(particles->at(myIndex).getVels()[0]), sizeof(float) * particles->at(myIndex).getAmnt(), queues[5].ROFlags); 
+	cl::Buffer retTBuff = queues[5].makeBuffer(&(t[0]), sizeof(float) * t.size(), queues[5].ROFlags);
+	cl::Buffer retEBuff = queues[5].makeBuffer(&(e[0]), sizeof(float) * e.size(), queues[5].ROFlags);
+	cl::NDRange globalRange(particles->at(myIndex).getAmnt());
+	cl::KernelFunctor funct(kernels[5], queues[5].getQueue(), cl::NullRange,
+			globalRange, cl::NullRange);
+	funct(posXBuff, posYBuff, posZBuff, rotTBuff, rotEBuff, avePosBuff, particles->at(myIndex).getAmnt(), velBuff, retTBuff, retEBuff);
+	queues[5].getQueue().enqueueMapBuffer(retTBuff, CL_TRUE, CL_MAP_READ, 0, t.size() * sizeof(float));
+	queues[5].getQueue().enqueueMapBuffer(retEBuff, CL_TRUE, CL_MAP_READ, 0, e.size() * sizeof(float));
 	ret.push_back(t);
 	ret.push_back(e);
 	return ret;
@@ -184,18 +188,21 @@ std::vector<floats> CLHandler::cohesion(int myIndex) {
 	avePos.push_back(avePosX[myIndex]);
 	avePos.push_back(avePosY[myIndex]);
 	avePos.push_back(avePosZ[myIndex]);
-	// posXBuff
-	// posYBuff
-	// posZBuff
-	// rotTBuff
-	// rotEBuff
-	// myIndexAvePos
-	// size
-	// vel
-	// retT
-	// retE
-
-
+	cl::Buffer posXBuff = queues[6].makeBuffer(&(particles->at(myIndex).getPosX()[0]), sizeof(float) * particles->at(myIndex).getAmnt(), queues[6].ROFlags);
+	cl::Buffer posYBuff = queues[6].makeBuffer(&(particles->at(myIndex).getPosY()[0]), sizeof(float) * particles->at(myIndex).getAmnt(), queues[6].ROFlags);
+	cl::Buffer posZBuff = queues[6].makeBuffer(&(particles->at(myIndex).getPosZ()[0]), sizeof(float) * particles->at(myIndex).getAmnt(), queues[6].ROFlags);
+	cl::Buffer rotTBuff = queues[6].makeBuffer(&(particles->at(myIndex).getRotTheta()[0]), sizeof(float) * particles->at(myIndex).getAmnt(), queues[6].ROFlags); 
+	cl::Buffer rotEBuff = queues[6].makeBuffer(&(particles->at(myIndex).getRotEpsilon()[0]), sizeof(float) * particles->at(myIndex).getAmnt(), queues[6].ROFlags); 
+	cl::Buffer avePosBuff = queues[6].makeBuffer(&(avePos[0]), sizeof(float), queues[6].ROFlags);
+	cl::Buffer velBuff = queues[6].makeBuffer(&(particles->at(myIndex).getVels()[0]), sizeof(float) * particles->at(myIndex).getAmnt(), queues[6].ROFlags); 
+	cl::Buffer retTBuff = queues[6].makeBuffer(&(t[0]), sizeof(float) * t.size(), queues[6].ROFlags);
+	cl::Buffer retEBuff = queues[6].makeBuffer(&(e[0]), sizeof(float) * e.size(), queues[6].ROFlags);
+	cl::NDRange globalRange(particles->at(myIndex).getAmnt());
+	cl::KernelFunctor funct(kernels[6], queues[6].getQueue(), cl::NullRange,
+			globalRange, cl::NullRange);
+	funct(posXBuff, posYBuff, posZBuff, rotTBuff, rotEBuff, avePosBuff, particles->at(myIndex).getAmnt(), velBuff, retTBuff, retEBuff);
+	queues[6].getQueue().enqueueMapBuffer(retTBuff, CL_TRUE, CL_MAP_READ, 0, t.size() * sizeof(float));
+	queues[6].getQueue().enqueueMapBuffer(retEBuff, CL_TRUE, CL_MAP_READ, 0, e.size() * sizeof(float));
 	ret.push_back(t);
 	ret.push_back(e);
 	return ret;
