@@ -2,7 +2,7 @@
 void seperate(__global float* posX, __global float* posY,__global float* posZ,
     __gloabal float* rotT, __gloabal float* rotE __global float* vel,
     __global float* preyX, __global float* preyY,__global float* preyZ,
-    int sizeHunter, int sizePrey, __global float* huntE, __global float* huntT) {
+    int sizeHunter, int sizePrey, __global float* huntT, __global float* huntE) {
 	
     size_t i = get_local_id(0);
 	if (i < sizeHunter) {
