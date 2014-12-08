@@ -3,6 +3,7 @@
 #include <iostream>
 #include <vector>
 #include "FlockItem.h"
+#include "CLHandler.h"
 #include <stdlib.h>
 #include <time.h>
 #include <string> 
@@ -10,7 +11,6 @@
 #include <unordered_map>
 #include <GL/freeglut.h>
 #include <iterator>
-// #include "CL/cl.hpp"
 #pragma once
 
 typedef FlockItem Flock;
@@ -19,10 +19,17 @@ typedef std::unordered_map<unsigned int, std::vector<float>> Colors;
 const int W = 512, H = 512, SLICES = 25, STACKS = 20;
 std::vector<Flock> allParticles;
 Colors c;
+CLHandler clH;
+float numMin;
+clock_t clock;
 
 void display(void); // forward declaration
 
 bool continueExperiment() {
+	float timePassed = ((((float)(clock_t() - clock)) / CLOCKS_PER_SEC) / 60.0f);
+	if (timePassed > numMin) { 
+		return false;
+	}
 	for (unsigned int i = 0; i < allParticles.size(); i++) {
 		if (allParticles[i].getAmnt() == 0 || allParticles[i].getAmnt() > allParticles[i].getThreshold()) {
 			return false;
@@ -31,6 +38,29 @@ bool continueExperiment() {
 	return true;
 }
 
+std::vector<std::string> kernelFiles() {
+	std::vector<std::string> ret;
+	ret.push_back("averagePosRot.cl");
+	ret.push_back("hunt.cl");
+	ret.push_back("hideFromHunter.cl");
+	ret.push_back("hideFromHunters.cl");
+	ret.push_back("alignment.cl");
+	ret.push_back("seperation.cl");
+	ret.push_back("cohesion.cl");
+	return ret;
+}
+
+std::vector<std::string> kernelFuncts() {
+	std::vector<std::string> ret;
+	ret.push_back("avePosRot");
+	ret.push_back("hunt");
+	ret.push_back("hideFromHunter");
+	ret.push_back("hideFromHunters");
+	ret.push_back("align");
+	ret.push_back("seperate");
+	ret.push_back("cohesion");
+	return ret;
+}
 
 void moveAllFlocks() {
 	for (unsigned int i = allParticles.size(); i > 0; i--) {
@@ -41,6 +71,7 @@ void moveAllFlocks() {
 	}
 
 	// if (continueExperiment) {
+	// if enough iterations / time add more partices
 	display(); // HERE FOR NOW. ONLY FOR ANIMATION
 	// }
 }
@@ -87,8 +118,6 @@ void display(void) {
 	// flocking here
 	moveAllFlocks();
 }
-
-// static bool continueSimulatoion = true	
 
 std::vector<Flock> makeAllParticles(std::string& fileName) {
 	std::ifstream file(fileName);
@@ -196,10 +225,10 @@ void openGLSetUp() {
 }
 
 int main(int argc, char* argv[]) {
-    if (argc != 3) {
+    if (argc != 4) {
         std::cout << "There were not engough parameters.\n"
-		    << "There needs to be <(CPU|GPU) (input file)>.\n"
-			<< "The user provided " << argc << ".\nAnd they are:\n";
+		    << "There needs to be <(CPU|GPU) (input file) (mins to run)>.\n"
+			<< "The user provided " << argc << " many arguments.\nAnd they are:\n";
 			for (int i = 0; i < argc; i++ ) {
 				std::cout << argv[i] << "\n";
 			}
@@ -214,10 +243,13 @@ int main(int argc, char* argv[]) {
 	setUpColors();
 	glutInit(&argc, argv);
 	openGLSetUp();
-	glutMainLoop();
 
-//	CL cl = createCL("file.cl", "function_name", &allParticles);
-//	EXP exp = createProject(cl, flock)
+	std::vector<Flock>* ptr = &allParticles;
+	clH = CLHandler(ptr, kernelFiles(), kernelFuncts(), std::string(argv[1]));
+
+	numMin = std::stof(argv[3]);
+	clock  = clock_t();
+	glutMainLoop();
 }
 
 

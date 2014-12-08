@@ -23,6 +23,15 @@ int getDevType(const std::string& device) throw(std::runtime_error) {
     throw std::runtime_error("Invalid device type specified");
 }
 
+CLHandler::CLHandler(std::vector<FlockItem>* flocks, std::vector<std::string>& kerenelFile,
+		std::vector<std::string>& kernelFuncts, std::string mode) {
+	int type = getDevType(mode);
+	for (unsigned int i =0; i < kernelFuncts.size(); i++) {
+		queues.push_back(ClCmdQueue(type));
+		kernels.push_back(queues[i].loadKernel(kerenelFile[i], kernelFuncts[i]));
+	}
+}
+
 void CLHandler::resetAverages() {
 	avePosX = floats(particles->size(), 0.0f);
 	avePosY = floats(particles->size(), 0.0f);

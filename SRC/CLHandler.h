@@ -23,20 +23,9 @@ private:
 	std::vector<floats> alignment(int myIndex);
 	std::vector<floats> seperation(int myIndex);
 	std::vector<floats> cohesion(int myIndex);
-
+	
 public:
 	CLHandler(std::vector<FlockItem>* flocks, std::vector<std::string>& kerenelFile,
 		std::vector<std::string>& kernelFuncts, std::string mode);
 	void oneIterationOfFlocking();
 };
-
-
-
-/* THINGS LEFT TO DO
-	std::vector<std::string> kernelFunctions;
-	std::vector<std::string> scources;
-	void initQueues();
-	std::string readKernel(std::string fileName);
-	CLHandler(std::vector<FlockItem>* flocks, std::vector<std::string>& kerenelFile,
-		std::vector<std::string> kernelFuncts);
-*/

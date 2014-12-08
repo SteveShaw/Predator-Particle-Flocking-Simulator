@@ -1,5 +1,5 @@
 #pragma OPENCL EXTENSION cl_khr_fp64 : enable __kernel
-void seperate(__global float* posX, __global float* posY,__global float* posZ,
+void hunt(__global float* posX, __global float* posY,__global float* posZ,
     __gloabal float* rotT, __gloabal float* rotE __global float* vel,
     __global float* preyX, __global float* preyY,__global float* preyZ,
     int sizeHunter, int sizePrey, __global float* huntT, __global float* huntE) {
