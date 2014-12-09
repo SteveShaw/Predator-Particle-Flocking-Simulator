@@ -55,7 +55,7 @@ void hideFromHunter(__global float* posX, __global float* posY,
 		
 		theta = fmod(theta, 3.14f); // theta % 3.14f;
 		epsilon = fmod(epsilon, (2.0f * 3.14f)); // epsilon % (2.0f * 3.14)f;
-		huntE[i] = epsilon;
-		huntT[i] = theta;
+		huntE[i] = -epsilon;
+		huntT[i] = -theta;
 	}
 }

@@ -2,8 +2,9 @@
 
 #include <vector>
 #include <string>
-
+#include <sstream>
 #define Vec std::vector<float>
+#pragma once
 
 class FlockItem{
     private:
@@ -51,4 +52,10 @@ class FlockItem{
 		void populate(float ax, float ay, float az);
 		// eat prey should be called before move
 		void eatPrey(FlockItem& prey);
+
+		std::string toString() {
+			std::stringstream  ss;
+			ss << pName << " has " << amnt << " at level " << foodChainLevel;
+			return  ss.str();
+		}
 };

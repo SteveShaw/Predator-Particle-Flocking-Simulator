@@ -3,7 +3,7 @@
 #include "FlockItem.h"
 #include <vector>
 #include <string>
-#include "ClCmdQueue.h"
+// #include "ClCmdQueue.h"
 #pragma once
 
 typedef std::vector<float> floats;
@@ -12,8 +12,8 @@ class CLHandler {
 private:
 	std::vector<FlockItem>* particles;
 	floats avePosX, avePosY, avePosZ, aveRotE, aveRotT;
-	std::vector<ClCmdQueue> queues;
-	std::vector<cl::Kernel> kernels;
+	// std::vector<ClCmdQueue> queues;
+	// std::vector<cl::Kernel> kernels;
 
 	void resetAverages();
 	void calcAverages();
@@ -25,6 +25,7 @@ private:
 	std::vector<floats> cohesion(int myIndex);
 	
 public:
+	CLHandler() {};
 	CLHandler(std::vector<FlockItem>* flocks, std::vector<std::string>& kerenelFile,
 		std::vector<std::string>& kernelFuncts, std::string mode);
 	void oneIterationOfFlocking();

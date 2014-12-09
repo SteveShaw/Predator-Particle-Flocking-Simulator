@@ -3,7 +3,7 @@
 #include <iostream>
 #include <vector>
 #include "FlockItem.h"
-#include "CLHandler.h"
+// #include "CLHandler.h"
 #include <stdlib.h>
 #include <time.h>
 #include <string> 
@@ -19,15 +19,20 @@ typedef std::unordered_map<unsigned int, std::vector<float>> Colors;
 const int W = 512, H = 512, SLICES = 25, STACKS = 20;
 std::vector<Flock> allParticles;
 Colors c;
-CLHandler clH;
+// CLHandler clH;
 float numMin;
-clock_t clock;
+clock_t t;
+double timerInterval = 0.00001;
+int generations = 1;
+float genTime = 0.5f;
+std::ofstream output;
 
 void display(void); // forward declaration
 
 bool continueExperiment() {
-	float timePassed = ((((float)(clock_t() - clock)) / CLOCKS_PER_SEC) / 60.0f);
-	if (timePassed > numMin) { 
+	float timePassed = ((((float)(clock() - t)) / CLOCKS_PER_SEC) / 60.0f);
+	std::cout << "Time passed = " << timePassed << "\n";
+	if (timePassed >= numMin) { 
 		return false;
 	}
 	for (unsigned int i = 0; i < allParticles.size(); i++) {
@@ -67,13 +72,27 @@ void moveAllFlocks() {
 		if (i != 1 ) {
 			allParticles[i - 1].eatPrey(allParticles[i - 2]);
 		}
-		allParticles[i - 1].move();
+		//allParticles[i - 1].move();
 	}
-
-	// if (continueExperiment) {
-	// if enough iterations / time add more partices
-	display(); // HERE FOR NOW. ONLY FOR ANIMATION
-	// }
+	if (continueExperiment()) {
+		float timePassed = ((((float)(clock() - t)) / CLOCKS_PER_SEC) / 60.0f);
+		if (timePassed >= genTime) {
+			generations++;
+			genTime += 0.5;
+			output << "Generation " << generations << " at time " << timePassed << "\n";
+			for (unsigned int i = 0; i < allParticles.size(); i++) {
+				allParticles[i].populate(0.0f, 0.0f, 0.0f);
+// need to use the CLHandler's averages above
+				output << allParticles[i].toString() << "\n";
+			}
+			output << "*******************************************************************************\n";
+		 }
+	} else {
+		// closes the file
+		output.close();
+		// terminate the program with sucess
+		exit(0);
+	}
 }
 
 void sphere() {
@@ -103,12 +122,12 @@ void display(void) {
 	gluLookAt(1, 2, 3, 0, 0, 0, 0, 1, 0);
 
 	glLineWidth(4);
-	std::cout << allParticles.size();
+//	std::cout << allParticles.size();
 	for (unsigned int i = 0; i < allParticles.size(); i++) {
 		setColor(i);
-		std::cout << "\nlevel : " << i << "\t Has " << allParticles[i].getAmnt() << "many partiles.\n";
+//		std::cout << "\nlevel : " << i << "\t Has " << allParticles[i].getAmnt() << "many partiles.\n";
 		for(unsigned int j = 0; j < allParticles[i].getAmnt(); j++) {
-			std::cout << allParticles[i].getPosX(j) << "\t" << allParticles[i].getPosY(j) << "\t" << allParticles[i].getPosZ(j) << "\n";
+//			std::cout << allParticles[i].getPosX(j) << "\t" << allParticles[i].getPosY(j) << "\t" << allParticles[i].getPosZ(j) << "\n";
 			IT(1, 1, 1, allParticles[i].getPosX(j), allParticles[i].getPosY(j), allParticles[i].getPosZ(j), 0, 0, 1, 0);
 		}
 	}
@@ -117,6 +136,9 @@ void display(void) {
 	glutSwapBuffers();
 	// flocking here
 	moveAllFlocks();
+
+	// call it back
+	glutPostRedisplay();
 }
 
 std::vector<Flock> makeAllParticles(std::string& fileName) {
@@ -234,27 +256,30 @@ int main(int argc, char* argv[]) {
 			}
 		return -1;
     }
-	
-	// create a log file of the state of the program at every generation and an image from the openGL buffer.
-	
+	// creates my log file
+	output.open("ParticleTest.dat");
+	// seeding random numbers
 	srand(time(NULL));
+	// file name of input file
 	std::string file(argv[2]);
+	// creates the particles
 	allParticles = makeAllParticles(file);
+	// write intro stuff
+	output << "Generation 0 (input) at time = 0.0f\n";
+	for (unsigned int i = 0; i < allParticles.size(); i++) {
+		output << allParticles[i].toString() << "\n";
+	}
+	output << "*******************************************************************************\n";
+	// creates my color map
 	setUpColors();
+	// OpenGL things
 	glutInit(&argc, argv);
 	openGLSetUp();
-
+	// pointer to the particles
 	std::vector<Flock>* ptr = &allParticles;
-	clH = CLHandler(ptr, kernelFiles(), kernelFuncts(), std::string(argv[1]));
+	// clH = CLHandler(ptr, kernelFiles(), kernelFuncts(), std::string(argv[1]));
 
 	numMin = std::stof(argv[3]);
-	clock  = clock_t();
+	t  = clock();
 	glutMainLoop();
 }
-
-
-
-// end conditions
-// 1. There are no particles at a specific level
-// 2. If any level gets to the point where there are 2X than what started
-// 3. If the simulation goes on for X many minutes. (X is an input float)
