@@ -11,8 +11,15 @@
 
 // Enable OpenCL C++ exceptions
 #define __CL_ENABLE_EXCEPTIONS
+
+#define AARONS_MACHINE
+#ifdef AARONS_MACHINE
 #include "../DEPENDENCIES/OPENCL/cl.hpp"
 #include "../DEPENDENCIES/OPENCL/cl.h"
+#endif
+#ifndef AARONS_MACHINE
+#include "CL/cl.hpp"
+#endif
 #pragma once
 
 /** \brief A convenience class to create and run OpenCL kernels on a

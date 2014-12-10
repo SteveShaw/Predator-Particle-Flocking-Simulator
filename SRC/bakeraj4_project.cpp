@@ -24,7 +24,7 @@ float numMin;
 clock_t t;
 double timerInterval = 0.00001;
 int generations = 0;
-float genTime = 0.5f;
+float genTime = 0.25f;
 std::ofstream output;
 
 void display(void); // forward declaration
@@ -121,12 +121,9 @@ void display(void) {
 	gluLookAt(1, 2, 3, 0, 0, 0, 0, 1, 0);
 
 	glLineWidth(4);
-//	std::cout << allParticles.size();
 	for (unsigned int i = 0; i < allParticles.size(); i++) {
 		setColor(i);
-//		std::cout << "\nlevel : " << i << "\t Has " << allParticles[i].getAmnt() << "many partiles.\n";
 		for(unsigned int j = 0; j < allParticles[i].getAmnt(); j++) {
-//			std::cout << allParticles[i].getPosX(j) << "\t" << allParticles[i].getPosY(j) << "\t" << allParticles[i].getPosZ(j) << "\n";
 			IT(1, 1, 1, allParticles[i].getPosX(j), allParticles[i].getPosY(j), allParticles[i].getPosZ(j), 0, 0, 1, 0);
 		}
 	}

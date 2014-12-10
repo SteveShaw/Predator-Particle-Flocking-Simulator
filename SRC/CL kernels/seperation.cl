@@ -12,7 +12,7 @@ void seperate(__global float* posX, __global float* posY, __global float* posZ,
 		ay = avePos[1] - posY[i];
 		az = avePos[2] - posZ[i];
 		
-		// 0 E
+		// 0 T
 		bx = vel[i] * (sin(rotT[i]) * cos(0.0f));
 		by = vel[i] * (sin(rotT[i]) * sin(0.0f));
 		bz = vel[i] * cos(rotT[i]);
@@ -26,7 +26,7 @@ void seperate(__global float* posX, __global float* posY, __global float* posZ,
 		a = sqrt((abs(ax) * abs(ax)) + (abs(ay) * abs(ay)) + (abs(az) * abs(az)));
 		theta = acos((-((c *c) - (a * a) - (b * b))) / (2.0f * a * b));
 		
-		// 0 T
+		// 0 E
 		bx = vel[i] * (sin(0.0f) * cos(rotE[i]));
 		by = vel[i] * (sin(0.0f) * sin(rotE[i]));
 		bz = vel[i] * cos(0.0f);
