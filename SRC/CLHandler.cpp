@@ -569,12 +569,8 @@ void CLHandler::oneIterationOfFlocking() {
 		for(unsigned int j = 0; j < particles->at(i).getAmnt(); j++) {
 			deltaRotT[j] = fmod(deltaRotT[j], 3.14f); // deltaRotT % 3.14f;
 			deltaRotE[j] = fmod(deltaRotE[j], (3.14f * 2.0f)); // deltaRotE % (2.0f * 3.14f);
-		}
-
-		// add in the deltaRotE and T to each praticle in vector[i].
-		for (unsigned int j = 0; j < particles[i].size(); j++) {
 			particles->at(i).addRotT(deltaRotT[j], j);
-			particles->at(j).addRotE(deltaRotE[j], j);
+			particles->at(i).addRotE(deltaRotE[j], j);
 		}
 	} // [0, pi] rotTheta, [0, 2pi) rotElpson
 }
