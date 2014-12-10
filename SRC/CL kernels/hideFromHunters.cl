@@ -25,7 +25,7 @@ void hideFromHunters(__global float* posX, __global float* posY, __global float*
 		c = sqrt((abs(cx) * abs(cx)) + (abs(cy) * abs(cy)) + (abs(cz) * abs(cz)));
 		b = sqrt((abs(bx) * abs(bx)) + (abs(by) * abs(by)) + (abs(bz) * abs(bz)));
 		a = sqrt((abs(ax) * abs(ax)) + (abs(ay) * abs(ay)) + (abs(az) * abs(az)));
-		theta = arccos((-((c *c) - (a * a) - (b * ))) / (2.0f * a * b));
+		theta = acos((-((c *c) - (a * a) - (b * b))) / (2.0f * a * b));
 		
 		// 0 T
 		bx = vel[i] * (sin(0.0f) * cos(rotE[i]));
@@ -39,7 +39,7 @@ void hideFromHunters(__global float* posX, __global float* posY, __global float*
 		c = sqrt((abs(cx) * abs(cx)) + (abs(cy) * abs(cy)) + (abs(cz) * abs(cz)));
 		b = sqrt((abs(bx) * abs(bx)) + (abs(by) * abs(by)) + (abs(bz) * abs(bz)));
 		a = sqrt((abs(ax) * abs(ax)) + (abs(ay) * abs(ay)) + (abs(az) * abs(az)));
-		epsilon = arccos((-((c *c) - (a * a) - (b * ))) / (2.0f * a * b));
+		epsilon = acos((-((c *c) - (a * a) - (b * b))) / (2.0f * a * b));
 		
 		theta = fmod(theta, 3.14f); // theta % 3.14f;
 		epsilon = fmod(epsilon, (2.0f * 3.14f)); // epsilon % (2.0f * 3.14)f;
