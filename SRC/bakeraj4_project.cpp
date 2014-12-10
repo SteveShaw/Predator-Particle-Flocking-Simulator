@@ -3,7 +3,7 @@
 #include <iostream>
 #include <vector>
 #include "FlockItem.h"
-// #include "CLHandler.h"
+#include "CLHandler.h"
 #include <stdlib.h>
 #include <time.h>
 #include <string> 
@@ -19,7 +19,7 @@ typedef std::unordered_map<unsigned int, std::vector<float>> Colors;
 const int W = 512, H = 512, SLICES = 25, STACKS = 20;
 std::vector<Flock> allParticles;
 Colors c;
-// CLHandler clH;
+CLHandler clH;
 float numMin;
 clock_t t;
 double timerInterval = 0.00001;
@@ -72,17 +72,16 @@ void moveAllFlocks() {
 		if (i != 1 ) {
 			allParticles[i - 1].eatPrey(allParticles[i - 2]);
 		}
-		//allParticles[i - 1].move();
+		allParticles[i - 1].move();
 	}
 	if (continueExperiment()) {
 		float timePassed = ((((float)(clock() - t)) / CLOCKS_PER_SEC) / 60.0f);
 		if (timePassed >= genTime) {
 			generations++;
 			genTime += 0.5;
-			output << "Generation " << generations << " at time " << timePassed << "\n";
+			output << "Generation " << generations << " at time " << timePassed << " seconds\n";
 			for (unsigned int i = 0; i < allParticles.size(); i++) {
-				allParticles[i].populate(0.0f, 0.0f, 0.0f);
-// need to use the CLHandler's averages above
+				allParticles[i].populate(clH.getAvePosX()[i], clH.getAvePosY()[i], clH.getAvePosZ()[i]);
 				output << allParticles[i].toString() << "\n";
 			}
 			output << "*******************************************************************************\n";
@@ -134,7 +133,7 @@ void display(void) {
 
 	glFlush();
 	glutSwapBuffers();
-	// flocking here
+	clH.oneIterationOfFlocking();
 	moveAllFlocks();
 
 	// call it back
@@ -265,7 +264,7 @@ int main(int argc, char* argv[]) {
 	// creates the particles
 	allParticles = makeAllParticles(file);
 	// write intro stuff
-	output << "Generation 0 (input) at time = 0.0f\n";
+	output << "Generation 0 (input) at time = 0.0 seconds\n";
 	for (unsigned int i = 0; i < allParticles.size(); i++) {
 		output << allParticles[i].toString() << "\n";
 	}
@@ -277,7 +276,7 @@ int main(int argc, char* argv[]) {
 	openGLSetUp();
 	// pointer to the particles
 	std::vector<Flock>* ptr = &allParticles;
-	// clH = CLHandler(ptr, kernelFiles(), kernelFuncts(), std::string(argv[1]));
+	clH = CLHandler(ptr, kernelFiles(), kernelFuncts(), std::string(argv[1]));
 
 	numMin = std::stof(argv[3]);
 	t  = clock();

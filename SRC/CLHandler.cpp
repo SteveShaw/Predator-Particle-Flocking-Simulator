@@ -5,17 +5,17 @@
 
 typedef std::vector<float> floats;
 
-#define HUNT_W 0.5
-#define HIDE_FROM_ONE_W 0.5
-#define HIDE_FROM_ALL_W 0.5
-#define ALIGN_W 0.5
-#define SEPERATE_W 0.5
-#define COHESION_W 0.5
+#define HUNT_W 0.8
+#define HIDE_FROM_ONE_W 0.9
+#define HIDE_FROM_ALL_W 0.7
+#define ALIGN_W 0.4
+#define SEPERATE_W 0.4
+#define COHESION_W 0.6
 
-#define OPENCL
+// #define OPENCL
 
-
-/*int getDevType(const std::string& device) throw(std::runtime_error) {
+#ifdef OPENCL
+int getDevType(const std::string& device) throw(std::runtime_error) {
     const std::string DevTypes = "CPUGPUACC";
     switch (DevTypes.find(device)) {
     case 0: return CL_DEVICE_TYPE_CPU;
@@ -23,16 +23,18 @@ typedef std::vector<float> floats;
     case 6: return CL_DEVICE_TYPE_ACCELERATOR;
     }
     throw std::runtime_error("Invalid device type specified");
-}*/
+}
+#endif
 
 CLHandler::CLHandler(std::vector<FlockItem>* flocks, std::vector<std::string>& kerenelFile,
 		std::vector<std::string>& kernelFuncts, std::string mode) {
 	particles = flocks;
+	resetAverages();
 #ifdef OPENCL
-	// int type = getDevType(mode);
+	int type = getDevType(mode);
 	for (unsigned int i =0; i < kernelFuncts.size(); i++) {
-		// queues.push_back(ClCmdQueue(type));
-		// kernels.push_back(queues[i].loadKernel(kerenelFile[i], kernelFuncts[i]));
+		queues.push_back(ClCmdQueue(type));
+		kernels.push_back(queues[i].loadKernel(kerenelFile[i], kernelFuncts[i]));
 	}
 #endif
 }
@@ -46,6 +48,7 @@ void CLHandler::resetAverages() {
 }
 
 void CLHandler::calcAverages() {
+	resetAverages();
 	for (unsigned int i = 0; i < particles->size();i++) {
 #ifdef OPENCL
 		floats avePos, aveRot;
@@ -287,9 +290,9 @@ std::vector<floats> CLHandler::hideFromPack(int myIndex, int predIndex) {
 #ifndef OPENCL
 	for (unsigned int i = 0; i < particles->at(myIndex).getAmnt(); i++) {
 		float theta, epsilon, a, b, c, ax, ay, az, bx, by, bz, cx, cy, cz;
-		ax = particles->at(predIndex).getPosX(index) - particles->at(myIndex).getPosX(i);
-		ay = particles->at(predIndex).getPosY(index) - particles->at(myIndex).getPosY(i);
-		az = particles->at(predIndex).getPosZ(index) - particles->at(myIndex).getPosZ(i);
+		ax = avePosX[predIndex] - particles->at(myIndex).getPosX(i);
+		ay = avePosX[predIndex] - particles->at(myIndex).getPosY(i);
+		az = avePosX[predIndex] - particles->at(myIndex).getPosZ(i);
 		
 		// 0 E
 		bx = particles->at(myIndex).getVels(i) * (sin(particles->at(myIndex).getRotTheta(i)) * cos(0.0f));
@@ -574,5 +577,4 @@ void CLHandler::oneIterationOfFlocking() {
 			particles->at(j).addRotE(deltaRotE[j], j);
 		}
 	} // [0, pi] rotTheta, [0, 2pi) rotElpson
-	resetAverages();
 }
