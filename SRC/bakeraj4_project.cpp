@@ -23,7 +23,7 @@ Colors c;
 float numMin;
 clock_t t;
 double timerInterval = 0.00001;
-int generations = 1;
+int generations = 0;
 float genTime = 0.5f;
 std::ofstream output;
 

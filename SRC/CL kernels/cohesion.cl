@@ -40,8 +40,8 @@ void cohesion(__global float* posX, __global float* posY, __global float* posZ,
 		a = sqrt((abs(ax) * abs(ax)) + (abs(ay) * abs(ay)) + (abs(az) * abs(az)));
 		epsilon = acos((-((c *c) - (a * a) - (b * b))) / (2.0f * a * b));
 		
-		theta = theta % (2.0f * 3.14f);
-		epsilon = epsilon % 3.14f;
+		theta = fmod(theta, 3.14f); // theta % 3.14f;
+		epsilon = fmod(epsilon, (2.0f * 3.14f)); // epsilon % (2.0f * 3.14)f;
 		cohesionE[i] = epsilon;
 		cohesionT[i] = theta;
 	}

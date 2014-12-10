@@ -28,11 +28,13 @@ typedef std::vector<float> floats;
 CLHandler::CLHandler(std::vector<FlockItem>* flocks, std::vector<std::string>& kerenelFile,
 		std::vector<std::string>& kernelFuncts, std::string mode) {
 	particles = flocks;
+#ifdef OPENCL
 	// int type = getDevType(mode);
 	for (unsigned int i =0; i < kernelFuncts.size(); i++) {
 		// queues.push_back(ClCmdQueue(type));
 		// kernels.push_back(queues[i].loadKernel(kerenelFile[i], kernelFuncts[i]));
 	}
+#endif
 }
 
 void CLHandler::resetAverages() {
@@ -195,6 +197,62 @@ std::vector<floats> CLHandler::hideFromClosestPackMember(int myIndex, int predIn
 	*/
 #endif
 
+#ifndef OPENCL
+	for (unsigned int i = 0; i < particles->at(myIndex).getAmnt(); i++) {
+		float dist = 99999999.9f; // large float
+		int index = 0;
+		for (unsigned int j = 0; j < particles->at(predIndex).getAmnt(); j++) {
+			float myX, myY, myZ, itX, itY, itZ;
+			myX = particles->at(myIndex).getPosX(i);
+			myY = particles->at(myIndex).getPosY(i);
+			myZ = particles->at(myIndex).getPosZ(i);
+			itX = particles->at(predIndex).getPosX(j);
+			itY = particles->at(predIndex).getPosY(j);
+			itZ = particles->at(predIndex).getPosZ(j);
+			float myDist = sqrt(((myX - itX) * (myX - itX)) + ((myY - itY) * (myY - itY)) + ((myZ - itZ) * (myZ - itZ)));
+			if (myDist < dist) {
+                index = j;
+            }
+		}
+		float theta, epsilon, a, b, c, ax, ay, az, bx, by, bz, cx, cy, cz;
+		ax = particles->at(predIndex).getPosX(index) - particles->at(myIndex).getPosX(i);
+		ay = particles->at(predIndex).getPosY(index) - particles->at(myIndex).getPosY(i);
+		az = particles->at(predIndex).getPosZ(index) - particles->at(myIndex).getPosZ(i);
+		
+		// 0 E
+		bx = particles->at(myIndex).getVels(i) * (sin(particles->at(myIndex).getRotTheta(i)) * cos(0.0f));
+		by = particles->at(myIndex).getVels(i) * (sin(particles->at(myIndex).getRotTheta(i)) * sin(0.0f));
+		bz = particles->at(myIndex).getVels(i) * cos(particles->at(myIndex).getRotTheta(i));
+		cx = ax - bx;
+		cy = ay - by;
+		cz = az - bz;
+		// c^2 = a^2 + b^2 - 2abcos(alpha)
+		c = sqrt((abs(cx) * abs(cx)) + (abs(cy) * abs(cy)) + (abs(cz) * abs(cz)));
+		b = sqrt((abs(bx) * abs(bx)) + (abs(by) * abs(by)) + (abs(bz) * abs(bz)));
+		a = sqrt((abs(ax) * abs(ax)) + (abs(ay) * abs(ay)) + (abs(az) * abs(az)));
+		theta = acos((-((c *c) - (a * a) - (b * b))) / (2.0f * a * b));
+
+		// 0 T
+		bx = particles->at(myIndex).getVels(i) * (sin(0.0f) * cos(particles->at(myIndex).getRotEpsilon(i)));
+		by = particles->at(myIndex).getVels(i) * (sin(0.0f) * sin(particles->at(myIndex).getRotEpsilon(i)));
+		bz = particles->at(myIndex).getVels(i) * cos(0.0f);
+		cx = ax - bx;
+		cy = ay - by;
+		cz = az - bz;
+		
+		// c^2 = a^2 + b^2 - 2abcos(alpha)
+		c = sqrt((abs(cx) * abs(cx)) + (abs(cy) * abs(cy)) + (abs(cz) * abs(cz)));
+		b = sqrt((abs(bx) * abs(bx)) + (abs(by) * abs(by)) + (abs(bz) * abs(bz)));
+		a = sqrt((abs(ax) * abs(ax)) + (abs(ay) * abs(ay)) + (abs(az) * abs(az)));
+		epsilon = acos((-((c *c) - (a * a) - (b * b))) / (2.0f * a * b));
+		
+		theta = fmod(theta, 3.14f); // theta % 3.14f;
+		epsilon = fmod(epsilon, (2.0f * 3.14f)); // epsilon % (2.0f * 3.14)f;
+		t.push_back(-theta);
+		e.push_back(-epsilon);
+	}
+#endif
+
 	ret.push_back(t);
 	ret.push_back(e);
 	return ret;
@@ -262,8 +320,9 @@ std::vector<floats> CLHandler::hideFromPack(int myIndex, int predIndex) {
 		
 		theta = fmod(theta, 3.14f); // theta % 3.14f;
 		epsilon = fmod(epsilon, (2.0f * 3.14f)); // epsilon % (2.0f * 3.14)f;
-		t.push_back(theta);
-		e.push_back(epsilon);
+		t.push_back(-theta);
+		e.push_back(-epsilon);
+	}
 #endif
 	ret.push_back(t);
 	ret.push_back(e);
@@ -273,6 +332,7 @@ std::vector<floats> CLHandler::hideFromPack(int myIndex, int predIndex) {
 std::vector<floats> CLHandler::alignment(int myIndex) {
 	std::vector<floats> ret;
 	floats t = floats(particles->at(myIndex).getAmnt(), 0.0f), e = floats(particles->at(myIndex).getAmnt(), 0.0f);
+#ifdef OPENCL
 	/*cl::Buffer myRotT = queues[4].makeBuffer(&(particles->at(myIndex).getRotTheta()[0]), sizeof(float) * particles->at(myIndex).getAmnt(), queues[4].ROFlags);
 	cl::Buffer myRotE = queues[4].makeBuffer(&(particles->at(myIndex).getRotEpsilon()[0]), sizeof(float) * particles->at(myIndex).getAmnt(), queues[4].ROFlags);
 	floats aveRots;
@@ -287,7 +347,22 @@ std::vector<floats> CLHandler::alignment(int myIndex) {
 	funct(myRotT, myRotE, aveRotsBuff, particles->at(myIndex).getAmnt(), retTBuff, retEBuff);
 	queues[4].getQueue().enqueueMapBuffer(retTBuff, CL_TRUE, CL_MAP_READ, 0, t.size() * sizeof(float));
 	queues[4].getQueue().enqueueMapBuffer(retEBuff, CL_TRUE, CL_MAP_READ, 0, e.size() * sizeof(float));
-	*/ret.push_back(t);
+	*/
+#endif
+
+#ifndef OPENCL
+	for (unsigned int i = 0; i < particles->at(myIndex).getAmnt(); i ++) {
+		float theta, epsilon;
+		theta = aveRotT[myIndex] - particles->at(myIndex).getRotTheta(i);
+		epsilon = aveRotE[myIndex] - particles->at(myIndex).getRotEpsilon(i);
+		theta = fmod(theta, 3.14f); // theta % 3.14f;
+		epsilon = fmod(epsilon, (2.0f * 3.14f)); // epsilon % (2.0f * 3.14)f
+		t.push_back(theta);
+		e.push_back(epsilon);
+	}
+#endif
+
+	ret.push_back(t);
 	ret.push_back(e);
 	return ret;
 }
@@ -295,6 +370,7 @@ std::vector<floats> CLHandler::alignment(int myIndex) {
 std::vector<floats> CLHandler::seperation(int myIndex) {
 	std::vector<floats> ret;
 	floats t = floats(particles->at(myIndex).getAmnt(), 0.0f), e = floats(particles->at(myIndex).getAmnt(), 0.0f);
+#ifdef OPENCL
 	floats avePos;
 	avePos.push_back(avePosX[myIndex]);
 	avePos.push_back(avePosY[myIndex]);
@@ -314,7 +390,51 @@ std::vector<floats> CLHandler::seperation(int myIndex) {
 	funct(posXBuff, posYBuff, posZBuff, rotTBuff, rotEBuff, avePosBuff, particles->at(myIndex).getAmnt(), velBuff, retTBuff, retEBuff);
 	queues[5].getQueue().enqueueMapBuffer(retTBuff, CL_TRUE, CL_MAP_READ, 0, t.size() * sizeof(float));
 	queues[5].getQueue().enqueueMapBuffer(retEBuff, CL_TRUE, CL_MAP_READ, 0, e.size() * sizeof(float));
-	*/ret.push_back(t);
+	*/
+#endif
+
+#ifndef OPENCL
+	for (unsigned int i = 0; i < particles->at(myIndex).getAmnt(); i++) {
+		float theta, epsilon, a, b, c, ax, ay, az, bx, by, bz, cx, cy, cz;
+		ax = avePosX[myIndex] - particles->at(myIndex).getPosX(i);
+		ay = avePosY[myIndex] - particles->at(myIndex).getPosY(i);
+		az = avePosZ[myIndex] - particles->at(myIndex).getPosZ(i);
+		
+		// 0 E
+		bx = particles->at(myIndex).getVels(i) * (sin(particles->at(myIndex).getRotTheta(i)) * cos(0.0f));
+		by = particles->at(myIndex).getVels(i) * (sin(particles->at(myIndex).getRotTheta(i)) * sin(0.0f));
+		bz = particles->at(myIndex).getVels(i) * cos(particles->at(myIndex).getRotTheta(i));
+		cx = ax - bx;
+		cy = ay - by;
+		cz = az - bz;
+		
+		// c^2 = a^2 + b^2 - 2abcos(alpha)
+		c = sqrt((abs(cx) * abs(cx)) + (abs(cy) * abs(cy)) + (abs(cz) * abs(cz)));
+		b = sqrt((abs(bx) * abs(bx)) + (abs(by) * abs(by)) + (abs(bz) * abs(bz)));
+		a = sqrt((abs(ax) * abs(ax)) + (abs(ay) * abs(ay)) + (abs(az) * abs(az)));
+		theta = acos((-((c *c) - (a * a) - (b * b))) / (2.0f * a * b));
+		
+		// 0 T
+		bx = particles->at(myIndex).getVels(i) * (sin(0.0f) * cos(particles->at(myIndex).getRotEpsilon(i)));
+		by = particles->at(myIndex).getVels(i) * (sin(0.0f) * sin(particles->at(myIndex).getRotEpsilon(i)));
+		bz = particles->at(myIndex).getVels(i) * cos(0.0f);
+		cx = ax - bx;
+		cy = ay - by;
+		cz = az - bz;
+		
+		// c^2 = a^2 + b^2 - 2abcos(alpha)
+		c = sqrt((abs(cx) * abs(cx)) + (abs(cy) * abs(cy)) + (abs(cz) * abs(cz)));
+		b = sqrt((abs(bx) * abs(bx)) + (abs(by) * abs(by)) + (abs(bz) * abs(bz)));
+		a = sqrt((abs(ax) * abs(ax)) + (abs(ay) * abs(ay)) + (abs(az) * abs(az)));
+		epsilon = acos((-((c *c) - (a * a) - (b * b))) / (2.0f * a * b));
+		
+		theta = fmod(theta, 3.14f); // theta % 3.14f;
+		epsilon = fmod(epsilon, (2.0f * 3.14f)); // epsilon % (2.0f * 3.14)f;
+		e.push_back(-epsilon);
+		t.push_back(-theta);
+	}
+#endif
+	ret.push_back(t);
 	ret.push_back(e);
 	return ret;
 }
@@ -322,6 +442,7 @@ std::vector<floats> CLHandler::seperation(int myIndex) {
 std::vector<floats> CLHandler::cohesion(int myIndex) {
 	std::vector<floats> ret;
 	floats t = floats(particles->at(myIndex).getAmnt(), 0.0f), e = floats(particles->at(myIndex).getAmnt(), 0.0f);
+#ifdef OPENCL
 	floats avePos;
 	avePos.push_back(avePosX[myIndex]);
 	avePos.push_back(avePosY[myIndex]);
@@ -341,7 +462,51 @@ std::vector<floats> CLHandler::cohesion(int myIndex) {
 	funct(posXBuff, posYBuff, posZBuff, rotTBuff, rotEBuff, avePosBuff, particles->at(myIndex).getAmnt(), velBuff, retTBuff, retEBuff);
 	queues[6].getQueue().enqueueMapBuffer(retTBuff, CL_TRUE, CL_MAP_READ, 0, t.size() * sizeof(float));
 	queues[6].getQueue().enqueueMapBuffer(retEBuff, CL_TRUE, CL_MAP_READ, 0, e.size() * sizeof(float));
-	*/ret.push_back(t);
+	*/
+#endif
+
+#ifndef OPENCL
+	for (unsigned int i = 0; i < particles->at(myIndex).getAmnt(); i++) {
+		float theta, epsilon, a, b, c, ax, ay, az, bx, by, bz, cx, cy, cz;
+		ax = avePosX[myIndex] - particles->at(myIndex).getPosX(i);
+		ay = avePosY[myIndex] - particles->at(myIndex).getPosY(i);
+		az = avePosZ[myIndex] - particles->at(myIndex).getPosZ(i);
+		
+		// 0 E
+		bx = particles->at(myIndex).getVels(i) * (sin(particles->at(myIndex).getRotTheta(i)) * cos(0.0f));
+		by = particles->at(myIndex).getVels(i) * (sin(particles->at(myIndex).getRotTheta(i)) * sin(0.0f));
+		bz = particles->at(myIndex).getVels(i) * cos(particles->at(myIndex).getRotTheta(i));
+		cx = ax - bx;
+		cy = ay - by;
+		cz = az - bz;
+		
+		// c^2 = a^2 + b^2 - 2abcos(alpha)
+		c = sqrt((abs(cx) * abs(cx)) + (abs(cy) * abs(cy)) + (abs(cz) * abs(cz)));
+		b = sqrt((abs(bx) * abs(bx)) + (abs(by) * abs(by)) + (abs(bz) * abs(bz)));
+		a = sqrt((abs(ax) * abs(ax)) + (abs(ay) * abs(ay)) + (abs(az) * abs(az)));
+		theta = acos((-((c *c) - (a * a) - (b * b))) / (2.0f * a * b));
+		
+		// 0 T
+		bx = particles->at(myIndex).getVels(i) * (sin(0.0f) * cos(particles->at(myIndex).getRotEpsilon(i)));
+		by = particles->at(myIndex).getVels(i) * (sin(0.0f) * sin(particles->at(myIndex).getRotEpsilon(i)));
+		bz = particles->at(myIndex).getVels(i) * cos(0.0f);
+		cx = ax - bx;
+		cy = ay - by;
+		cz = az - bz;
+		
+		// c^2 = a^2 + b^2 - 2abcos(alpha)
+		c = sqrt((abs(cx) * abs(cx)) + (abs(cy) * abs(cy)) + (abs(cz) * abs(cz)));
+		b = sqrt((abs(bx) * abs(bx)) + (abs(by) * abs(by)) + (abs(bz) * abs(bz)));
+		a = sqrt((abs(ax) * abs(ax)) + (abs(ay) * abs(ay)) + (abs(az) * abs(az)));
+		epsilon = acos((-((c *c) - (a * a) - (b * b))) / (2.0f * a * b));
+		
+		theta = fmod(theta, 3.14f); // theta % 3.14f;
+		epsilon = fmod(epsilon, (2.0f * 3.14f)); // epsilon % (2.0f * 3.14)f;
+		e.push_back(epsilon);
+		t.push_back(theta);
+	}
+#endif
+	ret.push_back(t);
 	ret.push_back(e);
 	return ret;
 }
@@ -411,28 +576,3 @@ void CLHandler::oneIterationOfFlocking() {
 	} // [0, pi] rotTheta, [0, 2pi) rotElpson
 	resetAverages();
 }
-
-
-// INFINITY
-
-
-////////////////////////////////////////////////////////////
-// THIS BELOW WAS OLD CODE! I MAY WANT TO RE-USE IT SOMEHOW!
-
-/*
-std::string CL::readKernel(std::string fileName) {
-	std::string ret = "";
-
-
-	return ret;
-}
-
-CL::CL(std::vector<FlockItem>* flocks, std::vector<std::string>& kerenelFile,
-		std::vector<std::string> kernelFuncts) {
-	particles = flocks;
-	for (unsigned int i = 0; i < kerenelFile.size(); i++) {
-		// scources.push_back(readKernel(kerenelFile[i]));
-	}
-	kernelFunctions = kernelFuncts;
-}
-*/
