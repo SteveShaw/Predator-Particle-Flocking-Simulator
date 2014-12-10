@@ -24,7 +24,9 @@ float numMin;
 clock_t t;
 double timerInterval = 0.00001;
 int generations = 0;
-float genTime = 0.25f;
+#define GENERATION 0.25f
+float genTime = GENERATION;
+float genTimer = GENERATION;
 std::ofstream output;
 
 void display(void); // forward declaration
@@ -78,7 +80,7 @@ void moveAllFlocks() {
 		float timePassed = ((((float)(clock() - t)) / CLOCKS_PER_SEC) / 60.0f);
 		if (timePassed >= genTime) {
 			generations++;
-			genTime += 0.5;
+			genTime += GENERATION;
 			output << "Generation " << generations << " at time " << timePassed << " seconds\n";
 			for (unsigned int i = 0; i < allParticles.size(); i++) {
 				allParticles[i].populate(clH.getAvePosX()[i], clH.getAvePosY()[i], clH.getAvePosZ()[i]);

@@ -199,7 +199,7 @@ void FlockItem::populate(float ax, float ay, float az) {
 	amnt += num;
 }
 
-static float THRESHHOLD = 0.005f;
+static float THRESHHOLD = 0.5f;
 void FlockItem::eatPrey(FlockItem& prey) {
 	for (unsigned int i = 0; i < amnt; i++) {
 		for (unsigned int j = 0; j < prey.getAmnt(); j++) {
